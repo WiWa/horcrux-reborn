@@ -1,0 +1,34 @@
+{
+  "name": "horcrux-reborn",
+  "version": "1.0.0",
+  "description": "Leverage the power of free cloud storage",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WiWa/horcrux-reborn.git"
+  },
+  "keywords": [
+    "horcrux"
+  ],
+  "author": "Win Wang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WiWa/horcrux-reborn/issues"
+  },
+  "homepage": "https://github.com/WiWa/horcrux-reborn",
+  "dependencies": {
+    "express": ">= 4.0.0",
+    "multer": "*",
+    "fs": "*",
+    "cookieParser": "*",
+    "session": "*",
+    "bodyParser": "*",
+    "mkdirp": "*",
+    "hbs": "*",
+  },
+  "engine": "node 0.10.32"
+}
