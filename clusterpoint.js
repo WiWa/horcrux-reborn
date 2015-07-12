@@ -12,7 +12,7 @@ var clusterpoint = (function(){
   var PASSWORD = creds.cps_password
 
 
-  tmp.api_call = function(type, document, session){
+  tmp.api_call = function(type, document, session, res){
 
     if (!document){
       console.log("No document sent")
@@ -37,6 +37,7 @@ var clusterpoint = (function(){
            var result = search_resp.results.document[0]
            console.log("User found: " + result)
            session.user_data = user
+           res.send('done')
            console.log(session)
            return result
          }
@@ -51,6 +52,7 @@ var clusterpoint = (function(){
          var result = insert_response.document[0]
          console.log('Inserted: ' + result.id);
          session.user_data = user
+         res.send('done')
          console.log(session)
          return result
       });

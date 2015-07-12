@@ -5,7 +5,8 @@ var express = require('express'),
     cookieParser = require('cookie-parser'),
     session = require('express-session'),
     bodyParser = require('body-parser'),
-    mkdirp = require('mkdirp')
+    mkdirp = require('mkdirp'),
+    hbs = require('hbs')
 // var config = require('./config.js'), //config file contains all tokens and other private info
 //    funct = require('./functions.js'); //funct file contains our helper functions for our Passport and database work
 
@@ -18,8 +19,8 @@ module.exports = {
   }
 }
 
-app.set('views', __dirname + '/views');
-app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
+app.engine('html', hbs.__express);
 
 
 app.use(express.static('public'));
@@ -53,11 +54,12 @@ var sess
 // Handling routes.
 app.get('/',function(req,res){
   sess = req.session
+  console.log('wtf')
   //clusterpoint.api_call(doc)
   //res.sendFile(__dirname + "/index.html");
-  if (sess.email){
+  if (sess.user_id){
     console.log('user is in sessions')
-    res.redirect('/profile/'+sess.id)
+    res.redirect('/profile/'+sess.user_id)
   }
   else {
     console.log('user needs login')
@@ -66,11 +68,13 @@ app.get('/',function(req,res){
 });
 
 app.get('/profile/:id', function(req,res){
-  res.end('Profile for user ' + req.params.id)
+  var d = req.session.user_data
+  res.render('profile',{id: d.id, name: d.name, email: d.email})
 })
 
 app.get('/login', function(req, res){
-  res.sendFile(__dirname + '/login.html')
+  //res.sendFile(__dirname + '/login.html')
+  res.render('login')
 })
 // Redirect the user to Google for authentication.  When complete, Google
 // will redirect the user back to the application at
@@ -79,8 +83,8 @@ app.post('/auth/google', function(req, res){
   sess = req.session
   sess.user_id = req.body.id
   var profile = req.body
-  clusterpoint.api_call('login', profile, sess)
-  res.end('done');
+  clusterpoint.api_call('login', profile, sess, res)
+  //res.end('done');
   
 });
 
@@ -89,7 +93,7 @@ app.get('/testing', function(req, res){
   try{
     var files = fs.readdirSync(user_dir)
     console.log("User files found: ", files)
-    res.sendFile("/index.html")
+    res.render("index")
   }
   catch(err){
     console.log("no directory found for user, creating...")

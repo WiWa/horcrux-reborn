@@ -27,7 +27,8 @@ function onSuccess(googleUser) {
         name: profile.getName(),
         email: profile.getEmail()
       }
-  $.post("./auth/google",data,function(data_res){        
+  $.post("./auth/google",data,function(data_res){  
+  console.log(data_res)      
             if(data_res==='done')           
             {
                 window.location.href="./profile/" + data.id;
