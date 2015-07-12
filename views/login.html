@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <head>
   <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <meta name="google-signin-scope" content="openid">
 <meta name="google-signin-client_id" content="538627817491-qjte6oggoghs3i9vngom39umujofhjav.apps.googleusercontent.com">
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
 <link rel="stylesheet" type="text/css" href="./main.css">
 </head>
 <body>
@@ -10,13 +12,13 @@
   <div class='headers'>
     <h1 class='header'>Welcome to Horcrux</h1>
     <h2 class='header'>Securely back up your files over multiple free services</h2>
-    <div id="my-signin2" class="centered" ></div>
+    <div class="g-signin2 centered" data-onsuccess="onSignIn" data-theme="dark"></div>
     
   </div>
   <a href="#" onclick="signOut();">Sign out</a>
 </div>
 <script>
-function onSuccess(googleUser) {
+/*function onSuccess(googleUser) {
   var profile = googleUser.getBasicProfile();
   console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
   console.log('Name: ' + profile.getName());
@@ -38,18 +40,33 @@ function onSuccess(googleUser) {
 }
 function onFailure(error){
   console.log(error)
-}
-  function renderButton() {
-      gapi.signin2.render('my-signin2', {
-        'scope': 'https://www.googleapis.com/auth/plus.login',
-        'width': 200,
-        'height': 50,
-        'longtitle': true,
-        'theme': 'dark',
-        'onsuccess': onSuccess,
-        'onfailure': onFailure
-      });
-    }
+}*/
+  function onSignIn(googleUser) {
+    // Useful data for your client-side scripts:
+    var profile = googleUser.getBasicProfile();
+    console.log("ID: " + profile.getId()); // Don't send this directly to your server!
+    console.log("Name: " + profile.getName());
+    console.log("Image URL: " + profile.getImageUrl());
+    console.log("Email: " + profile.getEmail());
+
+    // The ID token you need to pass to your backend:
+    var id_token = googleUser.getAuthResponse().id_token;
+    console.log("ID Token: " + id_token);
+    var data = {
+        id: profile.getId(), 
+        name: profile.getName(),
+        email: profile.getEmail(),
+        token: id_token
+      }
+      console.log("Posting data: ", data)
+  $.post("./auth/google",data,function(data_res){  
+  console.log(data_res)      
+        if(data_res==='done')           
+            {
+                window.location.href="./profile/" + data.id;
+            }
+        });
+  };
 function signOut() {
     var auth2 = gapi.auth2.getAuthInstance();
     auth2.signOut().then(function () {
@@ -57,5 +74,4 @@ function signOut() {
     });
   }
 </script>
-  <script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
 </body>
