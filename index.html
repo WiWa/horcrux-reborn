@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<head>
+  <title>horcrux lives on</title>
+  <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+</head>
+<body>
+<form id        =  "uploadForm"
+     enctype   =  "multipart/form-data"
+     action    =  "/upload"
+     method    =  "post"
+>
+
+</form>
+  <input type="file" id="file_input" name="file_to_upload" />
+  <input type="button" onclick="sendFile()" value="Upload File" name="submit_upload">
+
+
+<form id        =  "downloadForm"
+     action    =  "/dload"
+     method    =  "post"
+> 
+  <input type="text" id="file_to_download" name="file_to_download" value="reddits.py"/>
+  <input type="button" onclick="getFile()" value="Download" name="submit_download" />
+
+</form>
+
+
+<script>
+function sendFile() {
+  // If no file is selected, there's nothing to do
+  var file_input = $("#file_input")[0]
+  console.log(file_input)
+  if (!file_input.files.length){
+    console.log('no file chosen')
+    return
+  };
+
+  var fr = new FileReader(), file = file_input.files[0];
+  fr.onload = function(e) {
+      makeBlob(e.target.result, file);
+  };
+  fr.readAsArrayBuffer(file);
+  
+};
+// http://jsfiddle.net/koldev/cw7w5/
+var saveData = (function (data, filename) {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+    return function (data, fileName) {
+        url = window.URL.createObjectURL(data);
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
+}());
+// http://stackoverflow.com/questions/17135726/create-blob-from-blob-slices
+function makeBlob(dataArray, file){
+  var whole = new Blob([dataArray], {type: file.type})
+  console.log(whole)
+  var partSize = parseInt(file.size/2)
+  console.log(partSize)
+  var part1 = whole.slice(0, partSize)
+  var part2 = whole.slice(partSize, file.size)
+  console.log(part1)
+  console.log(part2)
+  var wholer = new Blob([part1, part2])
+  console.log(wholer)
+  //saveData(wholer, file.name)
+  var data = []
+  data.push(part1)
+  data.push(part2)
+  splitAndSendFile(data, file)
+}
+
+
+function splitAndSendFile(dataArray, file) {
+    var i = 0, formData, blob;
+    console.log("SENDING")
+    formData = new FormData();
+    for (; i < dataArray.length; i++) {
+        blob = dataArray[i]
+        formData.append("fileUpload"+i, blob, file.name + ".part" + (i+1));
+        
+    }
+    $.ajax({
+        url: '/blobCatcher',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(msg){
+            alert("Win: " + msg);
+            console.log("SENT")
+        },
+        error: function(bla, msg){
+            alert("Fail: " + msg);
+        }
+    });
+}
+function getFile() {
+  // If no file is selected, there's nothing to do
+  var file_output = $("#file_to_download")[0]
+  console.log(file_output)
+  $.ajax({
+      url: '/dload',
+      type: 'POST',
+      data: file_output,
+      processData: false,
+      contentType: false,
+      success: function(msg){
+          alert("downloading?!");
+          //console.log(msg)
+      },
+      error: function(bla, msg){
+          alert("No DL for you: " + msg);
+      }
+  });
+};
+
+</script>
+
+</body>

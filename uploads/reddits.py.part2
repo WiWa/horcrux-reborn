@@ -1,0 +1,29 @@
+m)
+
+  def getSubmissions(self):
+    return self.submissions
+
+class Article:
+
+  def __init__(self):
+    self.localvar = "hello"
+    self.__private = "hi"
+
+  def __str__(self):
+    return "from toString(): " + self.localvar
+
+  def firstMethod(self, var):
+    return str(var) + "!!"
+
+x = Article()
+print("x = Article()")
+print(x.localvar)
+print(x)
+print(x.firstMethod(5))
+print(x._Article__private)
+
+y = Page()
+print("\ny = Page()")
+y.addSubmission("hihi")
+print(y.subreddit)
+print(y.submissions)
