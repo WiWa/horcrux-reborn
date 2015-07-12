@@ -33,13 +33,13 @@ app.use(cookieParser())
 
 
 var clusterpoint = require('./clusterpoint.js').clusterpoint,
-    googledrive = require('./googledrive.js').googledrive,
-    google = require('googleapis'),
+//    googledrive = require('./googledrive.js').googledrive,
+//    google = require('googleapis'),
     dropbox = require('./dropbox.js').dropbox
 
 
 var dropbox_creds = require('./dropbox_creds.js')
-var google_creds = require('./google_creds.js')
+//var google_creds = require('./google_creds.js')
 
 var done = false
 

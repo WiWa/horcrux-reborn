@@ -34,7 +34,8 @@
     "google-auth-library": "*",
     "url": "*",
     "request": "*",
-    "crypto": "*"
+    "crypto": "*",
+    "request": "*"
   },
   "engine": "node 0.10.32"
 }
