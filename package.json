@@ -29,7 +29,9 @@
     "body-parser": "*",
     "mkdirp": "*",
     "hbs": "*",
-    "cps-api": "*"
+    "cps-api": "*",
+    "googleapis": "*",
+    "google-auth-library": "*"
   },
   "engine": "node 0.10.32"
 }
