@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <head>
+  <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 <meta name="google-signin-client_id" content="538627817491-qjte6oggoghs3i9vngom39umujofhjav.apps.googleusercontent.com">
 <link rel="stylesheet" type="text/css" href="./main.css">
 </head>
@@ -19,8 +20,23 @@ function onSuccess(googleUser) {
   var profile = googleUser.getBasicProfile();
   console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
   console.log('Name: ' + profile.getName());
-  console.log('Image URL: ' + profile.getImageUrl());
+  //console.log('Image URL: ' + profile.getImageUrl());
   console.log('Email: ' + profile.getEmail());
+  $.ajax({
+      url: '/auth/google',
+      type: 'POST',
+      data: {
+        id: profile.getId(), 
+        name: profile.getName(),
+        email: profile.getEmail()
+      },
+      success: function(msg){
+        window.location = "./"
+      },
+      error: function(bla, msg){
+
+      }
+  });
 }
 function onFailure(error){
   console.log(error)

@@ -3,44 +3,28 @@ var express = require('express'),
     fs = require('fs'),
     logger = require('morgan'),
     cookieParser = require('cookie-parser'),
-    session = require('express-session')
-    passport = require('passport'),
-    LocalStrategy = require('passport-local').Strategy,
-    GoogleStrategy = require('passport-google').LocalStrategy
+    session = require('express-session'),
+    bodyParser = require('body-parser'),
+    mkdirp = require('mkdirp')
 // var config = require('./config.js'), //config file contains all tokens and other private info
 //    funct = require('./functions.js'); //funct file contains our helper functions for our Passport and database work
 
-var app = module.exports = express()
+var app = express()
+
+
+
+module.exports = {
+  return_user: function (user){
+    console.log("I got the user!")
+    console.log(user)
+
+  }
+}
+
+
 app.use(express.static('public'));
+app.use(bodyParser.urlencoded({extended:true}));
 
-/*
-app.use(logger('combined'));
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-app.use(methodOverride('X-HTTP-Method-Override'));
-app.use(session({secret: 'hypernova', saveUninitialized: true, resave: true}));
-app.use(passport.initialize());
-app.use(passport.session());
-*/
-// Session-persisted message middleware
-/*
-app.use(function(req, res, next){
-  var err = req.session.error,
-      msg = req.session.notice,
-      success = req.session.success;
-
-  delete req.session.error;
-  delete req.session.success;
-  delete req.session.notice;
-
-  if (err) res.locals.error = err;
-  if (msg) res.locals.notice = msg;
-  if (success) res.locals.success = success;
-
-  next();
-});
-*/
 var clusterpoint = require('./clusterpoint.js').clusterpoint
 var done = false
 
@@ -65,35 +49,10 @@ app.use(multer({ dest: './uploads/' ,
 // Handling routes.
 app.get('/',function(req,res){
   
-  // Insert
-  var uniq_id_is_timestamp = Date.now()
-  var doc = {
-    id: uniq_id_is_timestamp,
-    name: 'ayy',
-    testlol: true
-
-  }
   //clusterpoint.api_call(doc)
   res.sendFile(__dirname + "/index.html");
 });
 
-/*app.get('/login',
-  passport.authenticate('local',{ successRedirect: '/',
-                                   failureRedirect: '/login',
-                                   failureFlash: true  }));
-*/
-/*
-passport.use(new GoogleStrategy({
-    returnURL: __dirname + 'auth/google/return',
-    realm: __dirname
-  },
-  function(identifier, profile, done) {
-    User.findOrCreate({ openId: identifier }, function(err, user) {
-      done(err, user);
-    });
-  }
-));
-*/
 
 app.get('/login', function(req, res){
   res.sendFile(__dirname + '/login.html')
@@ -101,15 +60,27 @@ app.get('/login', function(req, res){
 // Redirect the user to Google for authentication.  When complete, Google
 // will redirect the user back to the application at
 //     /auth/google/return
-app.get('/auth/google', passport.authenticate('google'));
+app.post('/auth/google', function(req, res){
+  var profile = req.body
+  clusterpoint.api_call('login', profile)
+});
 
-// Google will redirect the user to this URL after authentication.  Finish
-// the process by verifying the assertion.  If valid, the user will be
-// logged in.  Otherwise, authentication has failed.
-app.get('/auth/google/return',
-  passport.authenticate('google', { successRedirect: '/',
-                                    failureRedirect: '/login' }));
-
+app.get('/testing', function(req, res){
+  var user_dir = './uploads'
+  try{
+    var files = fs.readdirSync(user_dir)
+    console.log("User files found: ", files)
+    res.sendFile("/index.html")
+  }
+  catch(err){
+    console.log("no directory found for user, creating...")
+    mkdirp(user_dir, function(error) { 
+        // path was created unless there was error
+        if(error){console.log(error)}
+    });
+    res.end('errorino')
+  }
+})
 
 app.post('/dload', function(req, res){
     //var filename = req.
