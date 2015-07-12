@@ -24,11 +24,12 @@
     "express": ">= 4.0.0",
     "multer": "*",
     "fs": "*",
-    "cookieParser": "*",
-    "session": "*",
-    "bodyParser": "*",
+    "cookie-parser": "*",
+    "express-session": "*",
+    "body-parser": "*",
     "mkdirp": "*",
     "hbs": "*",
+    "cps-api": "*"
   },
   "engine": "node 0.10.32"
 }
