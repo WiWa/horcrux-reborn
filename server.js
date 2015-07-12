@@ -255,7 +255,7 @@ app.post('/upload/dropbox', function (req, res) {
   var sess = req.session.user_data
 
     var sess_id = sess.id
-    var parts = req.body.address.parts
+    var parts = req.body.parts
     var counter = 0
     var rsud = req.session.user_data
     var rs = req.session
