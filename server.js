@@ -34,12 +34,15 @@ app.use(cookieParser())
 
 var clusterpoint = require('./clusterpoint.js').clusterpoint,
     googledrive = require('./googledrive.js').googledrive,
+    google = require('googleapis'),
     dropbox = require('./dropbox.js').dropbox
 
 
 var dropbox_creds = require('./dropbox_creds.js')
+var google_creds = require('./google_creds.js')
 
 var done = false
+
 
 // Configure Express to use multer
 app.use(multer({ dest: './uploads/' ,
@@ -82,7 +85,8 @@ var sess
 // Handling routes.
 app.get('/',function(req,res){
   sess = req.session
-  console.log('wtf')
+
+
   //clusterpoint.api_call(doc)
   //res.sendFile(__dirname + "/index.html");
   if (sess.user_id){
@@ -107,8 +111,8 @@ app.post('/auth/google', function(req, res){
   sess = req.session
   sess.user_id = req.body.id
   sess.user_data = req.body
-  console.log(req.body)
-  console.log("FROM AUTH: ", sess.user_data, req.body)
+  //console.log(req.body)
+  //console.log("FROM AUTH: ", sess.user_data, req.body)
   sess.user_data.files = []
   sess.user_data.part_files = []
   clusterpoint.api_call('login', sess.user_data, sess, res)
@@ -165,6 +169,7 @@ app.post('/dload', function(req, res){
 })
 app.get('/profile/:id', function(req,res){
   var d = req.session.user_data
+  //googledrive.upload_file('./uploads/'+req.params.id+'/reddits.py', 'reddit.py')
   res.render('profile',d)
 })
 app.post('/profile/:id', function(req,res){
@@ -250,7 +255,7 @@ app.post('/upload/dropbox', function (req, res) {
   var sess = req.session.user_data
 
     var sess_id = sess.id
-    var parts = req.body.parts
+    var parts = req.body.address.parts
     var counter = 0
     var rsud = req.session.user_data
     var rs = req.session
@@ -269,10 +274,10 @@ app.post('/upload/dropbox', function (req, res) {
 
           content = data;
           //console.log(content); 
-          console.log(counter)
+          //console.log(counter)
           //fileupload(dropbox_creds.drop_token,content,serverpath,res);
           var token = dropbox_creds.drop_token
-          console.log("Checking serverpath...", serverpath)
+          //console.log("Checking serverpath...", serverpath)
             
           request.put('https://api-content.dropbox.com/1/files_put/auto/'+serverpath, {
               headers: { Authorization: 'Bearer ' + token 
@@ -287,12 +292,12 @@ app.post('/upload/dropbox', function (req, res) {
                   //console.log(bodymsg);
                   console.log("Dropbox Upload Success!")
                   counter++
-                  console.log(counter)
+                  //console.log(counter)
                   if(counter < parts.length){
                     uploader()
                   }
                   else{
-                    console.log(rsud)
+                    //console.log(rsud)
                     clusterpoint.api_call('update', rsud, rs, res)
                     res.redirect('/profile/'+sess_id)
                   }
@@ -303,8 +308,20 @@ app.post('/upload/dropbox', function (req, res) {
     }
     uploader()
   
-
 });
+/*
+app.post('/upload/googledrive',function(req, res){
+  var YOUR_API_KEY = 
+  request.post('https://www.googleapis.com/drive/v2/files?convert=false&ocr=false&pinned=true&visibility=PRIVATE&key=')
+{
+ "ownedByMe": true
+}
+})
+*/
+app.post('/download/', function(req, res){
+
+})
+
 app.post('/blobCatcher', function(req, res){
   var part_files = req.session.user_data.part_files
   var whole_name = part_files[0].substring(0,part_files[0].lastIndexOf(".part"))
@@ -312,7 +329,7 @@ app.post('/blobCatcher', function(req, res){
   var file_data = {
     filename: whole_name,
     parts: 2,
-    locations: ["", ""]
+    locations: ["dropbox", "dropbox"]
   }
   console.log('GET THIS', file_data)
   req.session.user_data.part_files = []

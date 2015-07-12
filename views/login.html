@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <head>
   <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <meta name="google-signin-scope" content="https://www.googleapis.com/auth/drive.file">
   <meta name="google-signin-scope" content="openid">
 <meta name="google-signin-client_id" content="538627817491-qjte6oggoghs3i9vngom39umujofhjav.apps.googleusercontent.com">
   <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+
+
 <link rel="stylesheet" type="text/css" href="./main.css">
+
+
+
 </head>
 <body>
 <div class="background-image"></div>
@@ -51,14 +58,14 @@ function onFailure(error){
 
     // The ID token you need to pass to your backend:
     var id_token = googleUser.getAuthResponse().id_token;
-    console.log("ID Token: " + id_token);
+    //console.log("ID Token: " + id_token);
     var data = {
         id: profile.getId(), 
         name: profile.getName(),
         email: profile.getEmail(),
         token: id_token
       }
-      console.log("Posting data: ", data)
+      //console.log("Posting data: ", data)
   $.post("./auth/google",data,function(data_res){  
   console.log(data_res)      
         if(data_res==='done')           

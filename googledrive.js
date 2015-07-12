@@ -2,6 +2,10 @@ var fs = require('fs')
 var readline = require('readline');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
+var google_creds = require('./google_creds.js')
+var OAuth2 = google.auth.OAuth2;
+var oauth2Client = new OAuth2(google_creds.id, google_creds.secret, '/auth/google/return');
+
 
 var googledrive = (function(){
 
@@ -25,7 +29,24 @@ var TOKEN_PATH = TOKEN_DIR + 'drive-api-quickstart.json';
     });
   }  
   // Load client secrets from a local file.
-  tmp.upload_file = function(){
+  tmp.upload_file = function(localpath, serverpath){
+    /*
+    var drive = google.drive({ version: 'v2', auth: oauth2Client });
+
+    drive.files.insert({
+      resource: {
+        title: serverpath
+      },
+      media: {
+        body: fs.createReadStream(localpath) // read streams are awesome!
+      }
+    },
+    // callback
+    function(res){
+      console.log(res)
+    }
+    );*/
+  
     fs.readFile('client_secret.json', function processClientSecrets(err, content) {
       if (err) {
         console.log('Error loading client secret file: ' + err);
@@ -33,9 +54,32 @@ var TOKEN_PATH = TOKEN_DIR + 'drive-api-quickstart.json';
       }
       // Authorize a client with the loaded credentials, then call the
       // Drive API.
-      authorize(JSON.parse(content), uploadFiles);
+      authorize(JSON.parse(content), uploadFile);
     });
   }
+  function uploadFile(auth){
+    var serverpath = 'reddit.py'
+    var localpath = './uploads/111227743516675092890/reddits.py'
+    var service = google.drive('v2');
+    service.files.insert({
+      auth: auth,
+      resource: {
+        title: serverpath
+      },
+      media: {
+        body: fs.createReadStream(localpath) // read streams are awesome!
+      }
+    }, function(err, response) {
+      if (err) {
+        console.log('The API returned an error: ' + err);
+        return;
+      }
+      else {
+        console.log(response)
+      }
+    });
+  }
+
 
 
 /**
@@ -138,9 +182,6 @@ function listFiles(auth) {
       }
     }
   });
-}
-function uploadFiles(){
-
 }
 return tmp
 }())

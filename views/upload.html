@@ -83,8 +83,14 @@ function splitAndSendFile(dataArray, file) {
     for (; i < dataArray.length; i++) {
         blob = dataArray[i]
         formData.append("fileUpload"+i, blob, file.name + ".part" + (i+1));
+
         parts.push("/"+file.name + ".part" + (i+1))
     }
+      // Load-Balance
+      var services = ['dropbox']
+      var balanced_parts = split(parts, services.length)
+      console.log("BALANCED PARTS: ", balanced_parts)
+
     $.ajax({
         url: '/blobCatcher',
         type: 'POST',
@@ -94,10 +100,6 @@ function splitAndSendFile(dataArray, file) {
         success: function(msg){
             if(msg.status == 'done'){
 
-              // Load-Balance
-              var services = ['dropbox']
-              var balanced_parts = split(parts, services.length)
-              console.log("BALANCED PARTS: ", balanced_parts)
               for(var i = 0; i < services.length; i++){
                 $.ajax({
                     url: '/upload/'+services[i],
