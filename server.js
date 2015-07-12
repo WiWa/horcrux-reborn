@@ -34,15 +34,29 @@ var done = false
 
 // Configure Express to use multer
 app.use(multer({ dest: './uploads/' ,
+  changeDest: function(dest, req, res) {
+    var newDestination = dest + req.session.user_id;
+    var stat = null;
+    try {
+        stat = fs.statSync(newDestination);
+    } catch (err) {
+        fs.mkdirSync(newDestination);
+    }
+    if (stat && !stat.isDirectory()) {
+        throw new Error('Directory cannot be created because an inode of a different type exists at "' + dest + '"');
+    }
+    return newDestination
+  } ,
   onFileUploadStart: function (file, form) {
     console.log(file.originalname + ' Upload is starting ...')
   },
   onFileUploadComplete: function (file) {
     // Name the file sensibly.
-    var rename_path = "uploads/" + file.originalname
+
+    var extracted_path = file.path.substring(0, file.path.lastIndexOf("/")) + "/"
+    var rename_path = extracted_path + file.originalname
     fs.rename(file.path, rename_path)
     file.path = rename_path
-
     console.log(file.originalname + ' uploaded to  ' + file.path)
     
     done=true 
@@ -67,10 +81,6 @@ app.get('/',function(req,res){
   }
 });
 
-app.get('/profile/:id', function(req,res){
-  var d = req.session.user_data
-  res.render('profile',{id: d.id, name: d.name, email: d.email})
-})
 
 app.get('/login', function(req, res){
   //res.sendFile(__dirname + '/login.html')
@@ -135,7 +145,14 @@ app.post('/dload', function(req, res){
     //res.sendfile(appFound.path)
 
 })
-
+app.get('/profile/:id', function(req,res){
+  var d = req.session.user_data
+  res.render('profile',{id: d.id, name: d.name, email: d.email})
+})
+app.get('/profile/:id/upload',function(req,res){
+  var d = req.session.user_data
+  res.render('upload',{id: d.id})
+})
 
 app.post('/upload',function(req,res){
   if(done==true){

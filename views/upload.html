@@ -91,11 +91,10 @@ function splitAndSendFile(dataArray, file) {
         processData: false,
         contentType: false,
         success: function(msg){
-            alert("Win: " + msg);
             console.log("SENT")
         },
         error: function(bla, msg){
-            alert("Fail: " + msg);
+            console.log(msg)
         }
     });
 }

@@ -1,8 +1,26 @@
 <!DOCTYPE html>
 <head>
+  <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+<meta name="google-signin-client_id" content="538627817491-qjte6oggoghs3i9vngom39umujofhjav.apps.googleusercontent.com">
+<link rel="stylesheet" type="text/css" href="./main.css">
+<script src="https://apis.google.com/js/platform.js"></script>
 </head>
 
 <body>
+
 {{name}}<br/>
 {{email}}
+<a href="./{{id}}/upload">Upload files</a>
+<h2>Files:</h2>
+<table id="files_table">
+  {{#each files}}
+    <tr>
+    <td>{{this}}</td>
+    <td><input type="button" class="downloadbtn" value="Download"</td>
+    </tr>
+  {{/each}}
+</table>
+<script>
+
+</script>
 </body>
