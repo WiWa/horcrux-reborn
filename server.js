@@ -36,6 +36,7 @@ var done = false
 app.use(multer({ dest: './uploads/' ,
   changeDest: function(dest, req, res) {
     var newDestination = dest + req.session.user_id;
+    //console.log(req)
     var stat = null;
     try {
         stat = fs.statSync(newDestination);
@@ -47,8 +48,12 @@ app.use(multer({ dest: './uploads/' ,
     }
     return newDestination
   } ,
-  onFileUploadStart: function (file, form) {
+  onFileUploadStart: function (file, req) {
     console.log(file.originalname + ' Upload is starting ...')
+    //console.log(form)
+    req.session.user_data.temp_files = req.session.user_data.temp_files || []
+    req.session.user_data.temp_files.push(file.originalname)
+    console.log(req.session.user_data.temp_files)
   },
   onFileUploadComplete: function (file) {
     // Name the file sensibly.
@@ -93,6 +98,7 @@ app.post('/auth/google', function(req, res){
   sess = req.session
   sess.user_id = req.body.id
   var profile = req.body
+  profile.files = []
   clusterpoint.api_call('login', profile, sess, res)
   //res.end('done');
   
@@ -147,7 +153,7 @@ app.post('/dload', function(req, res){
 })
 app.get('/profile/:id', function(req,res){
   var d = req.session.user_data
-  res.render('profile',{id: d.id, name: d.name, email: d.email})
+  res.render('profile',d)
 })
 app.get('/profile/:id/upload',function(req,res){
   var d = req.session.user_data
@@ -161,7 +167,20 @@ app.post('/upload',function(req,res){
 })
 
 app.post('/blobCatcher', function(req, res){
-  res.end("Blob Caught")
+  var temp_files = req.session.user_data.temp_files
+  var whole_name = temp_files[0].substring(0,temp_files[0].lastIndexOf(".part"))
+  console.log(whole_name, temp_files.length)
+  var file_data = {
+    filename: whole_name,
+    parts: 2,
+    locations: ["", ""]
+  }
+  console.log('GET THIS', file_data)
+  req.session.user_data.files.push(file_data)
+  res.send({
+    status: 'done',
+    id: req.session.user_data.id
+  })
 })
 
 

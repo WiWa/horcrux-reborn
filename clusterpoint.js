@@ -63,6 +63,15 @@ var clusterpoint = (function(){
     if(type == 'login'){
       return find(document)
     }
+    else if(type == 'update'){
+      conn.sendRequest(new cps.UpdateRequest(documents), function (err, resp) {
+        if (err) return console.error(err); // Handle error 
+        
+        var result = resp.document[0]
+        console.log("CPS UPDATED", result)
+
+      });
+    }
     else{
       console.log("No such call")
       return null

@@ -91,7 +91,9 @@ function splitAndSendFile(dataArray, file) {
         processData: false,
         contentType: false,
         success: function(msg){
-            console.log("SENT")
+            if(msg.status == 'done'){
+              window.location.href="/profile/" + msg.id;
+            }
         },
         error: function(bla, msg){
             console.log(msg)
