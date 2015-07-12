@@ -15,15 +15,18 @@ var app = express()
 
 module.exports = {
   return_user: function (user){
-    console.log("I got the user!")
-    console.log(user)
-
   }
 }
 
+app.set('views', __dirname + '/views');
+app.engine('html', require('ejs').renderFile);
+
 
 app.use(express.static('public'));
+app.use(express.static('views'));
 app.use(bodyParser.urlencoded({extended:true}));
+app.use(session({secret: 'darkmeme'}))
+
 
 var clusterpoint = require('./clusterpoint.js').clusterpoint
 var done = false
@@ -46,13 +49,25 @@ app.use(multer({ dest: './uploads/' ,
 }))
 
 
+var sess
 // Handling routes.
 app.get('/',function(req,res){
-  
+  sess = req.session
   //clusterpoint.api_call(doc)
-  res.sendFile(__dirname + "/index.html");
+  //res.sendFile(__dirname + "/index.html");
+  if (sess.email){
+    console.log('user is in sessions')
+    res.redirect('/profile/'+sess.id)
+  }
+  else {
+    console.log('user needs login')
+    res.redirect('/login')
+  }
 });
 
+app.get('/profile/:id', function(req,res){
+  res.end('Profile for user ' + req.params.id)
+})
 
 app.get('/login', function(req, res){
   res.sendFile(__dirname + '/login.html')
@@ -61,8 +76,12 @@ app.get('/login', function(req, res){
 // will redirect the user back to the application at
 //     /auth/google/return
 app.post('/auth/google', function(req, res){
+  sess = req.session
+  sess.user_id = req.body.id
   var profile = req.body
-  clusterpoint.api_call('login', profile)
+  clusterpoint.api_call('login', profile, sess)
+  res.end('done');
+  
 });
 
 app.get('/testing', function(req, res){

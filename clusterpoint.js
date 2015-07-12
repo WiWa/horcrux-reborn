@@ -12,7 +12,7 @@ var clusterpoint = (function(){
   var PASSWORD = creds.cps_password
 
 
-  tmp.api_call = function(type, document){
+  tmp.api_call = function(type, document, session){
 
     if (!document){
       console.log("No document sent")
@@ -36,7 +36,9 @@ var clusterpoint = (function(){
          else{
            var result = search_resp.results.document[0]
            console.log("User found: " + result)
-           return_user(result)
+           session.user_data = user
+           console.log(session)
+           return result
          }
       });
     }
@@ -48,27 +50,21 @@ var clusterpoint = (function(){
          if (err) return console.error(err);
          var result = insert_response.document[0]
          console.log('Inserted: ' + result.id);
-         return_user(result)
+         session.user_data = user
+         console.log(session)
+         return result
       });
     }
 
     console.log("Clusterpoint call!")
 
-
-    //test
-    document = {
-      id: 1234,
-      name: "testerino",
-      email: "lol@gmail.com"
-    }
     if(type == 'login'){
-      find(document)
+      return find(document)
     }
     else{
       console.log("No such call")
+      return null
     }
-
-
  
 
   }
