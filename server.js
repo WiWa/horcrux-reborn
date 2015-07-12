@@ -28,7 +28,9 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.use(session({secret: 'darkmeme'}))
 
 
-var clusterpoint = require('./clusterpoint.js').clusterpoint
+var clusterpoint = require('./clusterpoint.js').clusterpoint,
+    googledrive = require('./googledrive.js').googledrive
+
 var done = false
 
 // Configure Express to use multer
@@ -154,8 +156,10 @@ app.post('/dload', function(req, res){
 })
 app.get('/profile/:id', function(req,res){
   var d = req.session.user_data
-  console.log("FROM PROFILE: ", d)
   res.render('profile',d)
+})
+app.post('/profile/:id', function(req,res){
+  googledrive.list_files()
 })
 app.get('/profile/:id/upload',function(req,res){
   var d = req.session.user_data

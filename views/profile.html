@@ -10,7 +10,8 @@
 
 {{name}}<br/>
 {{email}}
-<a href="./{{id}}/upload">Upload files</a>
+<a href="./{{id}}/upload">Upload files</a><br/>
+<input type='button' onclick='testgoogledrive()' value='See Drive' />
 <h2>Files:</h2>
 <table id="files_table">
   {{#each files}}
@@ -21,6 +22,12 @@
   {{/each}}
 </table>
 <script>
+
+function testgoogledrive(){
+  $.post('./{{id}}', "", function(resp){
+    console.log(resp)
+  })
+}
 
 </script>
 </body>
