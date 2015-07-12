@@ -97,9 +97,11 @@ app.get('/login', function(req, res){
 app.post('/auth/google', function(req, res){
   sess = req.session
   sess.user_id = req.body.id
-  var profile = req.body
-  profile.files = []
-  clusterpoint.api_call('login', profile, sess, res)
+  sess.user_data = req.body
+  console.log(req.body)
+  console.log("FROM AUTH: ", sess.user_data, req.body)
+  sess.user_data.files = []
+  clusterpoint.api_call('login', sess.user_data, sess, res)
   //res.end('done');
   
 });
@@ -153,6 +155,7 @@ app.post('/dload', function(req, res){
 })
 app.get('/profile/:id', function(req,res){
   var d = req.session.user_data
+  console.log("FROM PROFILE: ", d)
   res.render('profile',d)
 })
 app.get('/profile/:id/upload',function(req,res){
@@ -176,11 +179,9 @@ app.post('/blobCatcher', function(req, res){
     locations: ["", ""]
   }
   console.log('GET THIS', file_data)
+  req.session.user_data.files = req.session.user_data.files || []
   req.session.user_data.files.push(file_data)
-  res.send({
-    status: 'done',
-    id: req.session.user_data.id
-  })
+  clusterpoint.api_call('update', req.session.user_data, req.session, res)
 })
 
 

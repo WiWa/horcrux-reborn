@@ -36,10 +36,8 @@ var clusterpoint = (function(){
          else{
            var result = search_resp.results.document[0]
            console.log("User found: " + result)
-           session.user_data = user
+           //session.user_data = user
            res.send('done')
-           console.log(session)
-           return result
          }
       });
     }
@@ -48,13 +46,14 @@ var clusterpoint = (function(){
       var insert_request = new cps.InsertRequest(document);
 
       conn.sendRequest(insert_request, function(err, insert_response) {
-         if (err) return console.error(err);
+         if (err) {
+          console.error(err);
+          return
+         }
          var result = insert_response.document[0]
          console.log('Inserted: ' + result.id);
-         session.user_data = user
+         //session.user_data = result
          res.send('done')
-         console.log(session)
-         return result
       });
     }
 
@@ -64,11 +63,19 @@ var clusterpoint = (function(){
       return find(document)
     }
     else if(type == 'update'){
-      conn.sendRequest(new cps.UpdateRequest(documents), function (err, resp) {
-        if (err) return console.error(err); // Handle error 
+      conn.sendRequest(new cps.UpdateRequest(document), function (err, resp) {
+        if (err) {
+          console.error(err); 
+          return
+        }// Handle error 
         
         var result = resp.document[0]
         console.log("CPS UPDATED", result)
+
+        res.send({
+          status: 'done',
+          id: session.user_data.id
+        })
 
       });
     }

@@ -27,6 +27,7 @@ function onSuccess(googleUser) {
         name: profile.getName(),
         email: profile.getEmail()
       }
+      console.log("Posting data: ", data)
   $.post("./auth/google",data,function(data_res){  
   console.log(data_res)      
             if(data_res==='done')           
