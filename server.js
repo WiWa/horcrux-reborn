@@ -252,6 +252,8 @@ app.post('/upload/dropbox', function (req, res) {
     var sess_id = sess.id
     var parts = req.body.parts
     var counter = 0
+    var rsud = req.session.user_data
+    var rs = req.session
     var uploader = function(){
       var partname = parts[counter]
       var localpath = "./uploads/" + sess_id + partname
@@ -290,6 +292,8 @@ app.post('/upload/dropbox', function (req, res) {
                     uploader()
                   }
                   else{
+                    console.log(rsud)
+                    clusterpoint.api_call('update', rsud, rs, res)
                     res.redirect('/profile/'+sess_id)
                   }
               }
@@ -301,10 +305,6 @@ app.post('/upload/dropbox', function (req, res) {
   
 
 });
-function fileupload(token,content,serverpath,res){
-    
-}
-
 app.post('/blobCatcher', function(req, res){
   var part_files = req.session.user_data.part_files
   var whole_name = part_files[0].substring(0,part_files[0].lastIndexOf(".part"))
@@ -318,7 +318,12 @@ app.post('/blobCatcher', function(req, res){
   req.session.user_data.part_files = []
   req.session.user_data.files = req.session.user_data.files || []
   req.session.user_data.files.push(file_data)
-  clusterpoint.api_call('update', req.session.user_data, req.session, res)
+  //clusterpoint.api_call('update', req.session.user_data, req.session, res)
+    res.send({
+      status: 'done',
+      id: req.session.user_data.id
+    })
+
 })
 
 

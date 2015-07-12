@@ -74,11 +74,6 @@ var clusterpoint = (function(){
         var result = resp.document[0]
         console.log("CPS UPDATED", result)
 
-        res.send({
-          status: 'done',
-          id: session.user_data.id
-        })
-
       });
     }
     else{
