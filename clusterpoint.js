@@ -35,8 +35,9 @@ var clusterpoint = (function(){
          }
          else{
            var result = search_resp.results.document[0]
-           console.log("User found: " + result)
-           //session.user_data = user
+           console.log("User found: ", result)
+           delete result['_locals']
+           session.user_data = result
            res.send('done')
          }
       });
@@ -51,7 +52,8 @@ var clusterpoint = (function(){
           return
          }
          var result = insert_response.document[0]
-         console.log('Inserted: ' + result.id);
+           delete result['_locals']
+         console.log('Inserted: ', result);
          //session.user_data = result
          res.send('done')
       });

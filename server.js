@@ -52,9 +52,9 @@ app.use(multer({ dest: './uploads/' ,
   onFileUploadStart: function (file, req) {
     console.log(file.originalname + ' Upload is starting ...')
     //console.log(form)
-    req.session.user_data.temp_files = req.session.user_data.temp_files || []
-    req.session.user_data.temp_files.push(file.originalname)
-    console.log(req.session.user_data.temp_files)
+    req.session.user_data.part_files = req.session.user_data.part_files || []
+    req.session.user_data.part_files.push(file.originalname)
+    console.log(req.session.user_data.part_files)
   },
   onFileUploadComplete: function (file) {
     // Name the file sensibly.
@@ -102,6 +102,7 @@ app.post('/auth/google', function(req, res){
   console.log(req.body)
   console.log("FROM AUTH: ", sess.user_data, req.body)
   sess.user_data.files = []
+  sess.user_data.part_files = []
   clusterpoint.api_call('login', sess.user_data, sess, res)
   //res.end('done');
   
@@ -173,15 +174,16 @@ app.post('/upload',function(req,res){
 })
 
 app.post('/blobCatcher', function(req, res){
-  var temp_files = req.session.user_data.temp_files
-  var whole_name = temp_files[0].substring(0,temp_files[0].lastIndexOf(".part"))
-  console.log(whole_name, temp_files.length)
+  var part_files = req.session.user_data.part_files
+  var whole_name = part_files[0].substring(0,part_files[0].lastIndexOf(".part"))
+  console.log(whole_name, part_files.length)
   var file_data = {
     filename: whole_name,
     parts: 2,
     locations: ["", ""]
   }
   console.log('GET THIS', file_data)
+  req.session.user_data.part_files = []
   req.session.user_data.files = req.session.user_data.files || []
   req.session.user_data.files.push(file_data)
   clusterpoint.api_call('update', req.session.user_data, req.session, res)
