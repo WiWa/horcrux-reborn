@@ -240,45 +240,69 @@ app.get('/dropbox_success', function (req, res) {
           headers: { Authorization: 'Bearer ' + token }
       }, function (error, response, body) {
           //res.send('Logged in successfully as ' + JSON.parse(body).display_name + '.');
-          res.redirect('/upload_dropbox')
+          res.redirect('/profile/'+req.session.user_data.id)
       });
 
   });
 });
 
-app.get('/upload_dropbox', function (req, res) {
+app.post('/upload/dropbox', function (req, res) {
   var sess = req.session.user_data
-  var serverpath;//file to be save at what path in server
-  var localpath;//path of the file which is to be uploaded
-  var partname = "/reddits.py.part1"
-  localpath = "./uploads/" + sess.id + partname
-  serverpath = "./lol/wut/reddits.py.part1"
-  if (req.query.error) {
-      return res.send('ERROR ' + req.query.error + ': ' + req.query.error_description);
-  }
-  fs.readFile(localpath,'utf8', function read(err, data) {
-        if (err) {
-            throw err;
-        }
-        content = data;
-        console.log(content); 
-        fileupload(dropbox_creds.drop_token,content,serverpath,sess,res);
-    });
-});
-function fileupload(token,content,serverpath,sess,res){
-    request.put('https://api-content.dropbox.com/1/files_put/auto/'+serverpath, {
-    headers: { Authorization: 'Bearer ' + token ,  'Content-Type': 'text/plain'
-    },body:content}, function optionalCallback (err, httpResponse, bodymsg) {
-    if (err) {
-        console.log(err);
-        res.end("Errored from Dropbox")
+
+    var sess_id = sess.id
+    var parts = req.body.parts
+    var counter = 0
+    var uploader = function(){
+      var partname = parts[counter]
+      var localpath = "./uploads/" + sess_id + partname
+      var serverpath = "./horcrux" + partname
+
+      if (req.query.error) {
+        return res.send('ERROR ' + req.query.error + ': ' + req.query.error_description);
+      }
+        fs.readFile(localpath,'utf8', function read(err, data) {
+          if (err) {
+              throw err;
+          }
+
+          content = data;
+          //console.log(content); 
+          console.log(counter)
+          //fileupload(dropbox_creds.drop_token,content,serverpath,res);
+          var token = dropbox_creds.drop_token
+          console.log("Checking serverpath...", serverpath)
+            
+          request.put('https://api-content.dropbox.com/1/files_put/auto/'+serverpath, {
+              headers: { Authorization: 'Bearer ' + token 
+             // ,      'Content-Type': 'text/plain'
+              },body:content}, function optionalCallback (err, httpResponse, bodymsg) {
+              if (err) {
+                  console.log(err);
+                  res.end("Errored from Dropbox")
+              }
+              else
+              { 
+                  //console.log(bodymsg);
+                  console.log("Dropbox Upload Success!")
+                  counter++
+                  console.log(counter)
+                  if(counter < parts.length){
+                    uploader()
+                  }
+                  else{
+                    res.redirect('/profile/'+sess_id)
+                  }
+              }
+          });
+
+        });
     }
-    else
-    { 
-        console.log(bodymsg);
-        res.redirect('./profile/'+sess.id)
-    }
+    uploader()
+  
+
 });
+function fileupload(token,content,serverpath,res){
+    
 }
 
 app.post('/blobCatcher', function(req, res){

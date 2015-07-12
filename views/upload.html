@@ -79,10 +79,11 @@ function splitAndSendFile(dataArray, file) {
     var i = 0, formData, blob;
     console.log("SENDING")
     formData = new FormData();
+    var parts = []
     for (; i < dataArray.length; i++) {
         blob = dataArray[i]
         formData.append("fileUpload"+i, blob, file.name + ".part" + (i+1));
-        
+        parts.push("/"+file.name + ".part" + (i+1))
     }
     $.ajax({
         url: '/blobCatcher',
@@ -92,13 +93,44 @@ function splitAndSendFile(dataArray, file) {
         contentType: false,
         success: function(msg){
             if(msg.status == 'done'){
-              window.location.href="/profile/" + msg.id;
-            }
+
+              // Load-Balance
+              var services = ['dropbox']
+              var balanced_parts = split(parts, services.length)
+              console.log("BALANCED PARTS: ", balanced_parts)
+              for(var i = 0; i < services.length; i++){
+                $.ajax({
+                    url: '/upload/'+services[i],
+                    type: 'POST',
+                    data: {
+                      parts: balanced_parts[i]
+                    },
+                    success: function(msg2){
+                      console.log("upload ajax success")
+                      window.location.href="/profile/" + msg.id;
+
+                    },
+                    error: function(msg2){
+                      console.log("upload ajax error: ", msg2)
+                    }
+                  })
+                }
+
+              }
+              
         },
         error: function(bla, msg){
             console.log(msg)
         }
     });
+}
+function split(a, n) {
+    var len = a.length,out = [], i = 0;
+    while (i < len) {
+        var size = Math.ceil((len - i) / n--);
+        out.push(a.slice(i, i += size));
+    }
+    return out;
 }
 function getFile() {
   // If no file is selected, there's nothing to do
