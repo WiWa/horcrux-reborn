@@ -5,7 +5,11 @@ var express = require('express'),
     session = require('express-session'),
     bodyParser = require('body-parser'),
     mkdirp = require('mkdirp'),
-    hbs = require('hbs')
+    hbs = require('hbs'),
+    url = require('url'),
+    request = require('request'),
+    crypto = require('crypto')
+
 // var config = require('./config.js'), //config file contains all tokens and other private info
 //    funct = require('./functions.js'); //funct file contains our helper functions for our Passport and database work
 
@@ -14,8 +18,7 @@ var app = express()
 
 
 module.exports = {
-  return_user: function (user){
-  }
+  app: app
 }
 
 app.set('view engine', 'html');
@@ -26,10 +29,15 @@ app.use(express.static('public'));
 app.use(express.static('views'));
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(session({secret: 'darkmeme'}))
+app.use(cookieParser())
 
 
 var clusterpoint = require('./clusterpoint.js').clusterpoint,
-    googledrive = require('./googledrive.js').googledrive
+    googledrive = require('./googledrive.js').googledrive,
+    dropbox = require('./dropbox.js').dropbox
+
+
+var dropbox_creds = require('./dropbox_creds.js')
 
 var done = false
 
@@ -172,6 +180,106 @@ app.post('/upload',function(req,res){
     res.end("File uploaded.");
   }
 })
+
+function generateRedirectURI(req) {
+  return url.format({
+      protocol: req.protocol,
+      host: req.headers.host,
+      pathname: app.path() + '/dropbox_success'
+  });
+}
+function generateCSRFToken() {
+  return crypto.randomBytes(18).toString('base64')
+    .replace(/\//g, '-').replace(/\+/g, '_');
+}
+app.get('/auth/dropbox', function (req, res) {
+var csrfToken = generateCSRFToken();
+res.cookie('csrf', csrfToken);
+res.redirect(url.format({
+    protocol: 'https',
+    hostname: 'www.dropbox.com',
+    pathname: '1/oauth2/authorize',
+    query: {
+        client_id: dropbox_creds.drop_key,//App key of dropbox api
+        response_type: 'code',
+        state: csrfToken,
+        redirect_uri: generateRedirectURI(req)
+    }
+}));
+});
+app.get('/dropbox_success', function (req, res) {
+  if (req.query.error) {
+      return res.send('ERROR ' + req.query.error + ': ' + req.query.error_description);
+  }
+
+  if (req.query.state !== req.cookies.csrf) {
+      return res.status(401).send(
+          'CSRF token mismatch, possible cross-site request forgery attempt.'
+      );
+  }
+
+  request.post('https://api.dropbox.com/1/oauth2/token', {
+      form: {
+          code: req.query.code,
+          grant_type: 'authorization_code',
+          redirect_uri: generateRedirectURI(req)
+      },
+      auth: {
+          user: dropbox_creds.drop_key,
+          pass: dropbox_creds.drop_secret
+      }
+  }, function (error, response, body) {
+      var data = JSON.parse(body);
+      if (data.error) {
+          return res.send('ERROR: ' + data.error);
+      }
+
+      var token = dropbox_creds.drop_token;
+      req.session.token=dropbox_creds.drop_token;
+      request.post('https://api.dropbox.com/1/account/info', {
+          headers: { Authorization: 'Bearer ' + token }
+      }, function (error, response, body) {
+          //res.send('Logged in successfully as ' + JSON.parse(body).display_name + '.');
+          res.redirect('/upload_dropbox')
+      });
+
+  });
+});
+
+app.get('/upload_dropbox', function (req, res) {
+  var sess = req.session.user_data
+  var serverpath;//file to be save at what path in server
+  var localpath;//path of the file which is to be uploaded
+  var partname = "/reddits.py.part1"
+  localpath = "./uploads/" + sess.id + partname
+  serverpath = "./lol/wut/reddits.py.part1"
+  if (req.query.error) {
+      return res.send('ERROR ' + req.query.error + ': ' + req.query.error_description);
+  }
+  fs.readFile(localpath,'utf8', function read(err, data) {
+        if (err) {
+            throw err;
+        }
+        content = data;
+        console.log(content); 
+        fileupload(dropbox_creds.drop_token,content,serverpath,sess,res);
+    });
+});
+function fileupload(token,content,serverpath,sess,res){
+    request.put('https://api-content.dropbox.com/1/files_put/auto/'+serverpath, {
+    headers: { Authorization: 'Bearer ' + token ,  'Content-Type': 'text/plain'
+    },body:content}, function optionalCallback (err, httpResponse, bodymsg) {
+    if (err) {
+        console.log(err);
+        res.end("Errored from Dropbox")
+    }
+    else
+    { 
+        console.log(bodymsg);
+        res.redirect('./profile/'+sess.id)
+    }
+});
+}
 
 app.post('/blobCatcher', function(req, res){
   var part_files = req.session.user_data.part_files

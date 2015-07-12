@@ -23,7 +23,20 @@ var TOKEN_PATH = TOKEN_DIR + 'drive-api-quickstart.json';
       // Drive API.
       authorize(JSON.parse(content), listFiles);
     });
-}
+  }  
+  // Load client secrets from a local file.
+  tmp.upload_file = function(){
+    fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+      if (err) {
+        console.log('Error loading client secret file: ' + err);
+        return;
+      }
+      // Authorize a client with the loaded credentials, then call the
+      // Drive API.
+      authorize(JSON.parse(content), uploadFiles);
+    });
+  }
+
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -126,7 +139,10 @@ function listFiles(auth) {
     }
   });
 }
-  return tmp
+function uploadFiles(){
+
+}
+return tmp
 }())
 
 exports.googledrive = googledrive
